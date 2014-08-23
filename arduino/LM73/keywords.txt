@@ -1,0 +1,37 @@
+#######################################
+# Syntax Coloring Map nRF905
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+LM73	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+begin	KEYWORD2
+temperature	KEYWORD2
+ready	KEYWORD2
+startOneShot	KEYWORD2
+setResolution	KEYWORD2
+setAlert	KEYWORD2
+power	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+LM73_0_I2C_FLOAT	LITERAL1
+LM73_0_I2C_GND	LITERAL1
+LM73_0_I2C_VDD	LITERAL1
+LM73_1_I2C_FLOAT	LITERAL1
+LM73_1_I2C_GND	LITERAL1
+LM73_1_I2C_VDD	LITERAL1
+LM73_RESOLUTION_11BIT	LITERAL1
+LM73_RESOLUTION_12BIT	LITERAL1
+LM73_RESOLUTION_13BIT	LITERAL1
+LM73_RESOLUTION_14BIT	LITERAL1
+LM73_POWER_ON	LITERAL1
+LM73_POWER_OFF	LITERAL1
