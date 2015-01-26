@@ -7,7 +7,7 @@
  */
 
 /*
- * Low power one shot temperature convertion
+ * Low power one shot temperature conversion
  *
  * A4 -> SDA
  * A5 -> SCL
@@ -25,32 +25,32 @@ void setup()
 
 	lm73.begin(LM73_0_I2C_FLOAT);
 	lm73.setResolution(LM73_RESOLUTION_14BIT); // 14 bit
-	lm73.power(LM73_POWER_OFF); // Turn off sensor (one shot temperature convertion)
+	lm73.power(LM73_POWER_OFF); // Turn off sensor (one shot temperature conversion)
 }
 
 void loop()
 {
 	delay(1000);
 
-	Serial.println("Starting one shot convertion...");
+	Serial.println("Starting one shot conversion...");
 
-	// Begin one shot convertion 
+	// Begin one shot conversion 
 	// Don't turn on sensor, that's done automatically
 	lm73.startOneShot();
 
-	// Start timing convertion
+	// Start timing conversion
 	byte start = millis();
 
 	// Wait for completion
 	while(!lm73.ready());
 
-	// Workout convertion time
+	// Workout conversion time
 	byte time = ((byte)millis()) - start;
 
 	// Get the temperature
 	double temp = lm73.temperature();
 
-	Serial.print("Convertion time: ");
+	Serial.print("Conversion time: ");
 	Serial.println(time);
 
 	Serial.print("Temperature: ");

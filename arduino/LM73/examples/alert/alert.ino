@@ -25,7 +25,7 @@ void setup()
 
 	lm73.begin(LM73_0_I2C_FLOAT);
 	lm73.setResolution(LM73_RESOLUTION_14BIT); // 14 bit
-	lm73.power(LM73_POWER_ON); // Turn on sensor (continuous temperature convertion)
+	lm73.power(LM73_POWER_ON); // Turn on sensor (continuous temperature conversion)
 	lm73.setAlert(30, 28); // Alert will trigger at 30C and stay triggered until temperature falls below 28C
 }
 

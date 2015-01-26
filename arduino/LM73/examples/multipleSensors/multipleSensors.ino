@@ -33,7 +33,7 @@ static void setupSensor(LM73_i2caddr_t addr, LM73 sensor)
 {
 	sensor.begin(addr);
 	sensor.setResolution(LM73_RESOLUTION_14BIT); // 14 bit
-	sensor.power(LM73_POWER_ON); // Turn on sensor (continuous temperature convertion)
+	sensor.power(LM73_POWER_ON); // Turn on sensor (continuous temperature conversion)
 }
 
 void loop()

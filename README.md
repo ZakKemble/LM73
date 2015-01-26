@@ -12,7 +12,7 @@ If you are using Arduino 1.5 then you will need to move the .cpp and .h files in
 Add
 
     #include <LM73.h>
-	#include <WIre.h>
+	#include <Wire.h>
 
 to the top of the sketches that use the library.
 

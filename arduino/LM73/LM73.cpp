@@ -139,7 +139,7 @@ int16_t LM73::temperature()
 }
 #endif
 
-// Start a one shot convertion
+// Start a one shot conversion
 void LM73::startOneShot()
 {
 	uint8_t reg;

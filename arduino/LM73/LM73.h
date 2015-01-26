@@ -78,7 +78,7 @@ public:
 #endif
 
 /**
-* See if one shot temperature convertion is complete
+* See if one shot temperature conversion is complete
 *
 * @return false if not ready, true otherwise
 */
