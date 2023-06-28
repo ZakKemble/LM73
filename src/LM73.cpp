@@ -37,7 +37,7 @@ void LM73::i2cWrite(uint8_t* buf, uint8_t len)
 void LM73::begin(uint8_t address)
 {
 	i2cAddress = address;
-	reg_config = 0;
+	reg_config = 0x40;
 }
 
 void LM73::ctrl(uint8_t resolution, uint8_t timeoutDisable)
@@ -86,6 +86,7 @@ float LM73::temperature()
 {
 	uint8_t buf[2];
 	buf[0] = LM73_REG_TEMPERATURE;
+	buf[1] = 0;
 	i2cRead(buf, sizeof(buf));
 	return ((buf[0]<<8) | buf[1]) / 128.0;
 }
