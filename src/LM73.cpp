@@ -1,202 +1,179 @@
 /*
  * Project: LM73 Temperature Sensor Library
- * Author: Zak Kemble, contact@zakkemble.co.uk
- * Copyright: (C) 2014 by Zak Kemble
+ * Author: Zak Kemble
+ * Copyright: (C) 2023 by Zak Kemble
  * License: GNU GPL v3 (see License.txt)
- * Web: https://github.com/zkemble/LM73
+ * Web: https://github.com/ZakKemble/LM73
  */
 
 #include <Arduino.h>
 #include <Wire.h>
 #include "LM73.h"
 #include "LM73_defs.h"
-#include "LM73_config.h"
 
-LM73::LM73()
+void LM73::i2cRead(uint8_t* buf, uint8_t len)
 {
-}
-
-void LM73::begin(LM73_i2caddr_t _i2cAddress)
-{
-	Wire.begin();
-	i2cAddress = _i2cAddress;
-
-	// TODO: do defaults here
-}
-
-bool LM73::i2cRead(uint8_t reg, uint8_t len, void* buff)
-{
-	Wire.beginTransmission(i2cAddress);
-	Wire.write(reg); // Set pointer to register
-	Wire.endTransmission(false); // Send data, but dont send STOP
-	Wire.requestFrom((uint8_t)i2cAddress, (uint8_t)len); // Repeated START, read bytes, send STOP
+	wire.beginTransmission(i2cAddress);
+	wire.write(buf[0]); // Set pointer to register
+	wire.endTransmission(false); // Send data, but dont send STOP
+	wire.requestFrom(i2cAddress, len); // Repeated START, read bytes, send STOP
 
 	// TODO:
 	// make sure endTransmission returned 0
 	// make sure requestFrom returned len
 
 	// Get the data
-	byte idx = 0;
-	while(Wire.available())
-		((uint8_t*)buff)[idx++] = Wire.read();
-
-	return true;
+	while(wire.available())
+		*buf++ = wire.read();
 }
 
-bool LM73::i2cWrite(uint8_t reg, uint8_t data)
+void LM73::i2cWrite(uint8_t* buf, uint8_t len)
 {
-	Wire.beginTransmission(i2cAddress);
-	Wire.write(reg); // Set pointer to register
-	Wire.write(data); // Set new data
-	Wire.endTransmission(); // Send data and send STOP
-
-	return true;
+	wire.beginTransmission(i2cAddress);
+	wire.write(buf, len);
+	wire.endTransmission();
 }
 
-bool LM73::i2cWrite(uint8_t reg, uint8_t data, uint8_t data2)
+void LM73::begin(uint8_t address)
 {
-	Wire.beginTransmission(i2cAddress);
-	Wire.write(reg); // Set pointer to register
-	Wire.write(data); // Set new data
-	Wire.write(data2); // Set new data
-	Wire.endTransmission(); // Send data and send STOP
-
-	return true;
+	i2cAddress = address;
+	reg_config = 0;
 }
 
-// Get temperature
-#if !LM73_TINY_MODE
-double LM73::temperature()
+void LM73::ctrl(uint8_t resolution, uint8_t timeoutDisable)
 {
-	uint8_t data[2];
-	i2cRead(LM73_REG_TEMPERATURE, sizeof(data), data);
+	uint8_t buf[2];
+	buf[0] = LM73_REG_CTRLSTATUS;
+	buf[1] = (timeoutDisable<<LM73_BIT_TIMEOUT_DIS) | ((resolution - 11)<<LM73_BIT_TEMP_RES);
+	i2cWrite(buf, sizeof(buf));
+}
+
+void LM73::mode(uint8_t mode)
+{
+	// 0 = continous
+	// 1 = one shot
+
+	reg_config = (reg_config & (1<<LM73_BIT_PWR_DOWN)) | (mode<<LM73_BIT_PWR_DOWN);
+
+	uint8_t buf[2];
+	buf[0] = LM73_REG_CONFIG;
+	buf[1] = reg_config;
+	i2cWrite(buf, sizeof(buf));
+}
+
 /*
-	// TEST STUFF
-
-	static byte aa = 255;
-	aa++;
-	if(aa == 0)
-	{
-		// 27.125   27
-		//data2[0] = 0b00001101;
-		//data2[1] = 0b10010000;
-		data = 0b0000110110010000;
-	}
-	else if(aa == 1)
-	{
-		// -40.125   -40
-		//data2[0] = 0b11101011;
-		//data2[1] = 0b11110000;
-		data = 0b1110101111110000;
-	}
-	else if(aa == 2)
-	{
-		// 0.125   0
-		data = 0b0000000000010000;
-	}
-	else if(aa == 3)
-	{
-		// -0.625    -1
-		data = 0b1111111110110000;
-	}
-	else
-	{
-		// -0.0625   0
-		//data2[0] = 0b11111111;
-		//data2[1] = 0b11111000;
-		data = 0b1111111111111000;
-		aa = 255;
-	}
-*/
-
-	double temperature = ((data[0]<<8) | data[1]) * 0.0078125;
-	return temperature;
-}
-#else
-int16_t LM73::temperature()
+int32_t LM73::temperature()
 {
 	uint8_t data[2];
 	i2cRead(LM73_REG_TEMPERATURE, sizeof(data), data);
 
 	int16_t temperature = (data[0]<<8) | data[1];
-	uint8_t doRound = data[1] & 0x40; // Is 0.5 bit set?
+	temperature >>= 7; // Sign extend and remove fractional part
 
-	if(temperature < 0)
-	{
-		doRound = !doRound;
-		temperature = -((-temperature)>>7);
-		if(doRound)
-			temperature--;
-	}
-	else
-	{
-		temperature >>= 7;
-		if(doRound)
-			temperature++;
-	}
+	int32_t t = temperature * 100000;
+	uint32_t frac = 0;
+	if(data[1] & (1<<6)) frac += 50000;
+	if(data[1] & (1<<5)) frac += 25000;
+	if(data[1] & (1<<4)) frac += 12500;
+	if(data[1] & (1<<3)) frac += 6250;
+	if(data[1] & (1<<2)) frac += 3125;
+	t += frac;
 
-	return temperature;
+	return t;
 }
-#endif
-
-// Start a one shot conversion
-void LM73::startOneShot()
+*/
+float LM73::temperature()
 {
-	uint8_t reg;
-	i2cRead(LM73_REG_CONFIG, sizeof(reg), &reg);
-	reg |= LM73_BIT_ONE_SHOT;
-	i2cWrite(LM73_REG_CONFIG, reg);
+	uint8_t buf[2];
+	buf[0] = LM73_REG_TEMPERATURE;
+	i2cRead(buf, sizeof(buf));
+	return ((buf[0]<<8) | buf[1]) / 128.0;
 }
 
-// Turn on/off
-void LM73::power(LM73_power_t pwr)
+void LM73::convert()
 {
-	uint8_t reg;
-	i2cRead(LM73_REG_CONFIG, sizeof(reg), &reg);
-	reg = (reg & LM73_MASK_PD) | pwr;
-	i2cWrite(LM73_REG_CONFIG, reg);
+	uint8_t buf[2];
+	buf[0] = LM73_REG_CONFIG;
+	buf[1] = reg_config | (1<<LM73_BIT_ONE_SHOT);
+	i2cWrite(buf, sizeof(buf));
 }
 
-// Is one shot data ready?
-bool LM73::ready()
+bool LM73::available()
 {
-	uint8_t reg;
-	i2cRead(LM73_REG_CTRLSTATUS, sizeof(reg), &reg);
-	return reg & LM73_BIT_DAV_FLAG;
+	uint8_t buf = LM73_REG_CTRLSTATUS;
+	i2cRead(&buf, sizeof(buf));
+	return buf & (1<<LM73_BIT_DAV_FLAG);
 }
 
-// Set temperature resolution
-void LM73::setResolution(LM73_resolution_t resolution)
+uint8_t LM73::alertStatus()
 {
-	uint8_t reg;
-	i2cRead(LM73_REG_CTRLSTATUS, sizeof(reg), &reg);
-	reg = (reg & LM73_MASK_RESOLUTION) | resolution;
-	i2cWrite(LM73_REG_CTRLSTATUS, reg);
+	uint8_t buf = LM73_REG_CTRLSTATUS;
+	i2cRead(&buf, sizeof(buf));
+	return (buf & 0b1110);
 }
 
-// 
-#if !LM73_TINY_MODE
-void LM73::setAlert(double high, double low)
+void LM73::alertReset()
+{
+	uint8_t buf[2];
+	buf[0] = LM73_REG_CONFIG;
+	buf[1] = reg_config | (1<<LM73_BIT_ALRT_RST);
+	i2cWrite(buf, sizeof(buf));
+}
+
+void LM73::alertConfig(
+	bool enable,
+	uint8_t polarity,
+	float upperLimit,
+	float lowerLimit
+)
 {
 	// NOTE: Alert temperatures are only 11 bit
 
-	uint16_t h = high / 0.0078125;
-	uint16_t l = low / 0.0078125;
+	uint8_t buf[3];
 
-	// TODO: Check neg numbers!
+	int16_t tmp;
 
-	i2cWrite(LM73_REG_THI, h>>8, h & 0xE0);
-	i2cWrite(LM73_REG_TLOW, l>>8, l & 0xE0);
-}
-#else
-void LM73::setAlert(int16_t high, int16_t low)
-{
-	uint16_t h = high << 7;
-	uint16_t l = low << 7;
+	tmp = upperLimit * 128;
+	buf[0] = LM73_REG_THI;
+	buf[1] = tmp>>8;
+	buf[2] = tmp;
+	i2cWrite(buf, 3);
 	
-	// TODO: Check neg numbers!
 
-	i2cWrite(LM73_REG_THI, h>>8, h & 0xE0);
-	i2cWrite(LM73_REG_TLOW, l>>8, l & 0xE0);
+	tmp = lowerLimit * 128;
+	buf[0] = LM73_REG_TLOW;
+	buf[1] = tmp>>8;
+	buf[2] = tmp;
+	i2cWrite(buf, 3);
+
+	reg_config = (reg_config & ~((1<<LM73_BIT_ALRT_EN)|(1<<LM73_BIT_ALRT_POL))) | (!enable<<LM73_BIT_ALRT_EN) | (polarity<<LM73_BIT_ALRT_POL);
+
+	buf[0] = LM73_REG_CONFIG;
+	buf[1] = reg_config;
+	i2cWrite(buf, 2);
+
+
+/*
+	uint16_t hfrac = upperLimit % 100000;
+	uint16_t lfrac = lowerLimit % 100000;
+	
+	uint8_t hd = 0;
+	if(hfrac > 50000) hd |= (1<<6);
+	if((hfrac - 50000) > 25000) hd |= (1<<5);
+	
+	uint8_t ld = 0;
+	if(lfrac > 50000) ld |= (1<<6);
+	if((lfrac - 50000) > 25000) ld |= (1<<5);
+	
+	int16_t upper = upperLimit ;
+	hd |= (upper & 1) << 7;
+	upper >>= 1;
+	
+	int16_t lower = lowerLimit ;
+	ld |= (lower & 1) << 7;
+	lower >>= 1;
+	
+	i2cWrite(LM73_REG_THI, upper, hd);
+	i2cWrite(LM73_REG_TLOW, lower, ld);
+*/
 }
-#endif
