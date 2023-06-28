@@ -33,7 +33,7 @@ void setup()
 static void setupSensor(byte addr, LM73& sensor)
 {
 	sensor.begin(addr);
-	sensor.ctrl(14, 0); // 14-bit resolution, enable idle bus timeout
+	sensor.ctrl(14, false); // 14-bit resolution, disable idle bus timeout
 	sensor.mode(0); // Continuous mode
 }
 

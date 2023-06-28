@@ -26,7 +26,7 @@ public:
 	void begin(uint8_t address);
 	void ctrl(
 		uint8_t resolution,
-		uint8_t timeoutDisable
+		bool busTimeout
 	);
 	void mode(uint8_t mode);
 	float temperature();

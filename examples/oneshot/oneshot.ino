@@ -25,7 +25,7 @@ void setup()
 	Wire.begin();
 
 	lm73.begin(0x48); // LM73-0 with floating address pin
-	lm73.ctrl(14, 1); // 14-bit resolution, disable idle bus timeout
+	lm73.ctrl(14, false); // 14-bit resolution, disable idle bus timeout
 	lm73.mode(1); // Low-power one-shot mode
 }
 

@@ -40,11 +40,11 @@ void LM73::begin(uint8_t address)
 	reg_config = 0x40;
 }
 
-void LM73::ctrl(uint8_t resolution, uint8_t timeoutDisable)
+void LM73::ctrl(uint8_t resolution, bool busTimeout)
 {
 	uint8_t buf[2];
 	buf[0] = LM73_REG_CTRLSTATUS;
-	buf[1] = (timeoutDisable<<LM73_BIT_TIMEOUT_DIS) | ((resolution - 11)<<LM73_BIT_TEMP_RES);
+	buf[1] = (!busTimeout<<LM73_BIT_TIMEOUT_DIS) | ((resolution - 11)<<LM73_BIT_TEMP_RES);
 	i2cWrite(buf, sizeof(buf));
 }
 

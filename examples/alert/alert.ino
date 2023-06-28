@@ -28,7 +28,7 @@ void setup()
 	pinMode(13, OUTPUT);
 
 	lm73.begin(0x48);
-	lm73.ctrl(14, 0); // 14-bit resolution, enable idle bus timeout
+	lm73.ctrl(14, false); // 14-bit resolution, disable idle bus timeout
 	lm73.mode(0); // Continuous mode
 	lm73.alertConfig(true, 0, 30, 26); // Alert will trigger at 30C and stay triggered until temperature falls below 26C
 }
