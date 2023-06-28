@@ -1,0 +1,18 @@
+{
+	"name": "LM73 Temperature Sensor Library",
+	"version": "1.0.0",
+	"keywords": "Arduino, Sensor, Temperature, LM73, ESP8266, NodeMCU, ESP32, I2C",
+	"description": "LM73 Temperature Sensor Library",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ZakKemble/LM73"
+	},
+	"authors": [
+		{
+			"name": "Zak Kemble",
+			"maintainer": true
+		}
+	],
+	"frameworks": "arduino",
+	"platforms": "*"
+}
