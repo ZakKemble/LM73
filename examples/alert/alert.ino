@@ -1,9 +1,9 @@
 /*
  * Project: LM73 Temperature Sensor Library
- * Author: Zak Kemble, contact@zakkemble.co.uk
- * Copyright: (C) 2014 by Zak Kemble
+ * Author: Zak Kemble
+ * Copyright: (C) 2023 by Zak Kemble
  * License: GNU GPL v3 (see License.txt)
- * Web: https://github.com/zkemble/LM73
+ * Web: https://github.com/ZakKemble/LM73
  */
 
 /*
@@ -17,37 +17,47 @@
 #include <LM73.h>
 #include <Wire.h>
 
-LM73 lm73 = LM73();
+LM73 lm73 = LM73(Wire);
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(115200);
+	Wire.begin();
+	
+	pinMode(2, INPUT_PULLUP);
+	pinMode(13, OUTPUT);
 
-	lm73.begin(LM73_0_I2C_FLOAT);
-	lm73.setResolution(LM73_RESOLUTION_14BIT); // 14 bit
-	lm73.power(LM73_POWER_ON); // Turn on sensor (continuous temperature conversion)
-	lm73.setAlert(30, 28); // Alert will trigger at 30C and stay triggered until temperature falls below 28C
+	lm73.begin(0x48);
+	lm73.ctrl(14, 0); // 14-bit resolution, enable idle bus timeout
+	lm73.mode(0); // Continuous mode
+	lm73.alertConfig(true, 0, 30, 26); // Alert will trigger at 30C and stay triggered until temperature falls below 26C
 }
 
 void loop()
 {
 	delay(1000);
 
-	// Get the temperature
-	double temp = lm73.temperature();
+	// Get the latest temperature
+	float temp = lm73.temperature();
 
 	// Get alert state
 	bool alertState = !digitalRead(2);
 
 	// Show temperature
-	Serial.print("Temperature: ");
+	Serial.print(F("Temperature: "));
 	Serial.println(temp, 5);
 
 	// Show alert state
 	if(alertState)
-		Serial.println("ALERT!");
+	{
+		Serial.println(F("ALERT!"));
+		digitalWrite(13, HIGH);
+	}
 	else
-		Serial.println("OK");
+	{
+		Serial.println(F("OK"));
+		digitalWrite(13, LOW);
+	}
 
 	Serial.println();
 }

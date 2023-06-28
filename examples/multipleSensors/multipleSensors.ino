@@ -1,9 +1,9 @@
 /*
  * Project: LM73 Temperature Sensor Library
- * Author: Zak Kemble, contact@zakkemble.co.uk
- * Copyright: (C) 2014 by Zak Kemble
+ * Author: Zak Kemble
+ * Copyright: (C) 2023 by Zak Kemble
  * License: GNU GPL v3 (see License.txt)
- * Web: https://github.com/zkemble/LM73
+ * Web: https://github.com/ZakKemble/LM73
  */
 
 /*
@@ -16,24 +16,25 @@
 #include <LM73.h>
 #include <Wire.h>
 
-LM73 sensor1 = LM73();
-LM73 sensor2 = LM73();
-LM73 sensor3 = LM73();
+LM73 sensor1 = LM73(Wire);
+LM73 sensor2 = LM73(Wire);
+LM73 sensor3 = LM73(Wire);
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(115200);
+	Wire.begin();
 
-	setupSensor(LM73_0_I2C_FLOAT, sensor1); // LM73-0 with address pin not connected (floating)
-	setupSensor(LM73_0_I2C_GND, sensor2); // LM73-0 with address pin connected to ground
-	setupSensor(LM73_0_I2C_VDD, sensor3); // LM73-0 with address pin connected to power
+	setupSensor(0x48, sensor1); // LM73-0 with address pin not connected (floating)
+	setupSensor(0x49, sensor2); // LM73-0 with address pin connected to ground
+	setupSensor(0x4A, sensor3); // LM73-0 with address pin connected to power
 }
 
-static void setupSensor(LM73_i2caddr_t addr, LM73 sensor)
+static void setupSensor(byte addr, LM73& sensor)
 {
 	sensor.begin(addr);
-	sensor.setResolution(LM73_RESOLUTION_14BIT); // 14 bit
-	sensor.power(LM73_POWER_ON); // Turn on sensor (continuous temperature conversion)
+	sensor.ctrl(14, 0); // 14-bit resolution, enable idle bus timeout
+	sensor.mode(0); // Continuous mode
 }
 
 void loop()
@@ -47,9 +48,9 @@ void loop()
 	Serial.println();
 }
 
-static void showSensorTemp(LM73 sensor)
+static void showSensorTemp(LM73& sensor)
 {
-	double temp = sensor.temperature();
-	Serial.print("Temperature: ");
+	float temp = sensor.temperature();
+	Serial.print(F("Temperature: "));
 	Serial.println(temp, 5);
 }
