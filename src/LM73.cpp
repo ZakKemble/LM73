@@ -7,7 +7,7 @@
 #include "LM73.h"
 #include "LM73_defs.h"
 
-void LM73::i2cRead(uint8_t* buf, uint8_t len)
+void LM73::i2cRead(uint8_t* buf, uint8_t const len) const
 {
 	wire.beginTransmission(i2cAddress);
 	wire.write(buf[0]); // Set pointer to register
@@ -23,20 +23,20 @@ void LM73::i2cRead(uint8_t* buf, uint8_t len)
 		*buf++ = wire.read();
 }
 
-void LM73::i2cWrite(uint8_t* buf, uint8_t len)
+void LM73::i2cWrite(const uint8_t* const buf, uint8_t const len) const
 {
 	wire.beginTransmission(i2cAddress);
 	wire.write(buf, len);
 	wire.endTransmission();
 }
 
-void LM73::begin(uint8_t address)
+void LM73::begin(uint8_t const address)
 {
 	i2cAddress = address;
 	reg_config = 0x40;
 }
 
-void LM73::ctrl(uint8_t resolution, bool busTimeout)
+void LM73::ctrl(uint8_t const resolution, bool const busTimeout) const
 {
 	uint8_t buf[2];
 	buf[0] = LM73_REG_CTRLSTATUS;
@@ -44,7 +44,7 @@ void LM73::ctrl(uint8_t resolution, bool busTimeout)
 	i2cWrite(buf, sizeof(buf));
 }
 
-void LM73::mode(uint8_t mode)
+void LM73::mode(uint8_t const mode)
 {
 	// 0 = continous
 	// 1 = one shot
@@ -78,7 +78,7 @@ int32_t LM73::temperature()
 	return t;
 }
 */
-float LM73::temperature()
+float LM73::temperature() const
 {
 	uint8_t buf[2];
 	buf[0] = LM73_REG_TEMPERATURE;
@@ -87,7 +87,7 @@ float LM73::temperature()
 	return ((buf[0]<<8) | buf[1]) / 128.0;
 }
 
-void LM73::convert()
+void LM73::convert() const
 {
 	uint8_t buf[2];
 	buf[0] = LM73_REG_CONFIG;
@@ -95,21 +95,21 @@ void LM73::convert()
 	i2cWrite(buf, sizeof(buf));
 }
 
-bool LM73::available()
+bool LM73::available() const
 {
 	uint8_t buf = LM73_REG_CTRLSTATUS;
 	i2cRead(&buf, sizeof(buf));
 	return buf & (1<<LM73_BIT_DAV_FLAG);
 }
 
-uint8_t LM73::alertStatus()
+uint8_t LM73::alertStatus() const
 {
 	uint8_t buf = LM73_REG_CTRLSTATUS;
 	i2cRead(&buf, sizeof(buf));
 	return (buf & 0b1110);
 }
 
-void LM73::alertReset()
+void LM73::alertReset() const
 {
 	uint8_t buf[2];
 	buf[0] = LM73_REG_CONFIG;
@@ -118,10 +118,10 @@ void LM73::alertReset()
 }
 
 void LM73::alertConfig(
-	bool enable,
-	uint8_t polarity,
-	float upperLimit,
-	float lowerLimit
+	bool const enable,
+	uint8_t const polarity,
+	float const upperLimit,
+	float const lowerLimit
 )
 {
 	// NOTE: Alert temperatures are only 11 bit
