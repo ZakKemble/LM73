@@ -78,7 +78,7 @@ int32_t LM73::temperature()
 	return t;
 }
 */
-float LM73::temperature() const
+float LM73::read() const
 {
 	uint8_t buf[2];
 	buf[0] = LM73_REG_TEMPERATURE;

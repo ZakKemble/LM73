@@ -25,7 +25,8 @@ public:
 		bool const busTimeout
 	) const;
 	void mode(uint8_t const mode);
-	float temperature() const;
+	[[deprecated("Please use 'read()' instead")]] float temperature() const { return read(); };
+	float read() const;
 	void convert() const;
 	bool available() const;
 	uint8_t alertStatus() const;
