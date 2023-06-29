@@ -1,10 +1,6 @@
-/*
- * Project: LM73 Temperature Sensor Library
- * Author: Zak Kemble
- * Copyright: (C) 2023 by Zak Kemble
- * License: GNU GPL v3 (see License.txt)
- * Web: https://github.com/ZakKemble/LM73
- */
+// LM73 Temperature Sensor Library - https://github.com/ZakKemble/LM73
+// Copyright (C) 2014-2023, Zak Kemble
+// MIT License
 
 /*
  * Low-power one-shot temperature conversion
