@@ -44,7 +44,7 @@ void loop()
 	byte time = ((byte)millis()) - start;
 
 	// Get the temperature
-	float temp = lm73.temperature();
+	float temp = lm73.read();
 
 	Serial.print(F("Conversion time: "));
 	Serial.println(time);

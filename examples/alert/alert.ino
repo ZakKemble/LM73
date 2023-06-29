@@ -34,7 +34,7 @@ void loop()
 	delay(1000);
 
 	// Get the latest temperature
-	float temp = lm73.temperature();
+	float temp = lm73.read();
 
 	// Get alert state
 	bool alertState = !digitalRead(2);

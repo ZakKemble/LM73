@@ -46,7 +46,7 @@ void loop()
 
 static void showSensorTemp(LM73& sensor)
 {
-	float temp = sensor.temperature();
+	float temp = sensor.read();
 	Serial.print(F("Temperature: "));
 	Serial.println(temp, 5);
 }
