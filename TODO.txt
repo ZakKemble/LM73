@@ -1,4 +1,0 @@
-AVR-C version of library
-Enable/disable alert
-Alert polarity
-Manual alert reset
